@@ -1,10 +1,9 @@
 package entities;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.stream.Collectors;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -57,39 +56,33 @@ public class RedBayes {
         nodos.set(i, n);
     }
 
-    public void preds(NodoBayes nodo) {
+
+    // Imprime recursivamente los nodos de predecesores
+    public void preds(NodoBayes nodo, ArrayList<NodoBayes> visitados) {
         System.out.println(nodo.getNombre());
         for (NodoBayes n : nodo.getPredecesores()) {
-            preds(n);
+            if(!visitados.contains(n)) {
+                visitados.add(n);
+                preds(n, visitados);
+            }
         }
     }
 
     public void preds(String nNodo) {
         NodoBayes nodo = nombreToNodo(nNodo);
         System.out.println(nodo.getNombre());
-        ArrayList<NodoBayes> p = nodo.getPredecesores();
-        if(!p.isEmpty()) for (NodoBayes n : nodo.getPredecesores())
-            preds(n);
+        ArrayList<NodoBayes> visitados = new ArrayList<>();
+        for (NodoBayes n : nodo.getPredecesores()) {
+            if(!visitados.contains(n)) {
+                visitados.add(n);
+                preds(n, visitados);
+            }
+        }
     }
 
-    // Getters y Setters
-    public String getNombre() {
-        return nombre;
-    }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public ArrayList<NodoBayes> getNodos() {
-        return nodos;
-    }
-
-    public void setNodos(ArrayList<NodoBayes> nodos) {
-        this.nodos = nodos;
-    }
-
-    public void nodosFromArchivo(String file) throws Exception {
+    // Inicializa los nodos de acuerdo a un archivo de texto dado
+    private void nodosFromArchivo(String file) throws FileNotFoundException {
         // Abrir el archivo de texto
         File archivo = new File(file);
         Scanner lector = new Scanner(archivo);
@@ -112,11 +105,6 @@ public class RedBayes {
                     for(String d : dependencias)
                         addArco(d, nombreTabla);
                 }
-                // Imprimir los valores de la tabla actual (para fines de prueba)
-                System.out.println("-----------------------------");
-                System.out.println("Nombre de tabla: " + nombreTabla);
-                n.printProbs();
-                System.out.println("-----------------------------");
                 continue;
             }
 
@@ -153,5 +141,31 @@ public class RedBayes {
 
         // Cerrar el archivo
         lector.close();
+    }
+
+    // Getters y Setters
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public ArrayList<NodoBayes> getNodos() {
+        return nodos;
+    }
+
+    public void setNodos(ArrayList<NodoBayes> nodos) {
+        this.nodos = nodos;
+    }
+
+    public void setNodos(String file) {
+        this.nodos = new ArrayList<>();
+        try {
+            nodosFromArchivo(file);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
