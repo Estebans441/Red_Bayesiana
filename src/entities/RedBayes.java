@@ -1,11 +1,8 @@
 package entities;
 
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 public class RedBayes {
     private String nombre; // Nombre descriptivo de la red
@@ -34,6 +31,27 @@ public class RedBayes {
     }
 
     // Metodos Funcionales
+    public Double Prob(String query){
+        Double res = 0.0;
+        // NODO=VALOR | NODOX=X,NODOY=Y
+        query = query.replace(" ", "");
+
+        // Nodo objetivo para calcular su probabilidad
+        String nombreObj = query.split("\\|")[0].split("=")[0];
+        String valObj = query.split("\\|")[0];
+        NodoBayes objetivo = nombreToNodo(nombreObj);
+
+        String evDado = "";
+        if(query.split("\\|").length > 1)
+            evDado = query.split("\\|")[1];
+        ArrayList<NodoBayes> visitados = new ArrayList<>();
+        res = objetivo.prob(valObj, evDado, visitados);
+
+
+        return res;
+    }
+
+
     public void addNodo(String nombre, ArrayList<String> valores) {
         nodos.add(new NodoBayes(nombre, valores));
     }

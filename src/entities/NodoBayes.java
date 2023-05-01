@@ -1,5 +1,7 @@
 package entities;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class NodoBayes {
@@ -26,6 +28,94 @@ public class NodoBayes {
     }
 
     // Metodos Funcionales
+
+    public Double prob(String valObj, String evDad, ArrayList<NodoBayes> visitados){
+        double res = 0.0;
+
+        // Valor objetivo del nodo actual
+        valObj = valObj.split("=")[1];
+
+        // Se agrega a nodos visitados
+        visitados.add(this);
+
+        // Si no tiene predecesores
+        if(predecesores.isEmpty()) {
+            return probabilidades.get(valObj).get("");
+        }
+
+        // Separa los eventos dados por coma y los almacena en un ArrayList
+        ArrayList<String> eventosDados = new ArrayList<>();
+        Collections.addAll(eventosDados, evDad.split(","));
+
+        // Filas que coinciden con los eventos dados
+        HashMap<String, Double> obj = probabilidades.get(valObj);
+        ArrayList<String> evDadosCoin = new ArrayList<>(obj.keySet());
+        evDadosCoin.removeIf(e -> !coincideEventos(e, eventosDados));
+
+        // Por cada evento dado que coincida
+        for(String e : evDadosCoin){
+            ArrayList<NodoBayes> visitadosE = new ArrayList<>(visitados);
+            // Probabilidad parcial
+            Double prob = probabilidades.get(valObj).get(e);
+            /* Impresion de los datos (para fines de prueba)
+            System.out.println("Nodo: " + this.getNombre());
+            System.out.println("Evento Obj: " + valObj);
+            System.out.println("Eventos dados: " + e);
+            System.out.println("Prob = " + prob);
+            System.out.println("------------------");*/
+
+            // Visita los nodos predecesores
+            for(NodoBayes n : predecesores){
+                String evDadoPred = "";
+                ArrayList<String> evsObjPred = new ArrayList<>();
+
+                // Se toman los eventos dados (de la tabla del nodo actual) y se aregan a los eventos dados para
+                // la consulta del nodo predecesor
+                ArrayList<String> eventos = new ArrayList<>(Arrays.asList(e.split(",")));
+                for(String evDado : eventosDados)
+                    if(!eventos.contains(evDado))
+                        eventos.add(evDado);
+
+                // Si los eventos dados incluyen al nodo, significa que se le calcula la prob de algun valor especifico
+                if(e.contains(n.getNombre())){
+                    // Se arma la query para el nodo predecesor tomando como valor obj el que se encuentra dentro de
+                    // los eventos dados
+                    for(String ei : eventos){
+                        if(ei.contains(n.getNombre()))
+                            evsObjPred.add(ei);
+                        else
+                            evDadoPred = evDadoPred + ei + ",";
+                    }
+                    // Se elimina la ultima coma
+                    if(evDadoPred.length() > 0)
+                        evDadoPred = evDadoPred.substring(0,evDadoPred.length()-1);
+                }
+
+                // Una vez armada la query se procede a calcular el valor de probabilidad de esta
+                if(!visitadosE.contains(n)){
+                    for(String eOb : evsObjPred){
+                        Double probPred = n.prob(eOb, evDadoPred, visitadosE);
+                        prob *= probPred;
+                    }
+                }
+            }
+            // Se suma el valor de esta probabilidad a la probabilidad total
+            res += prob;
+        }
+        return res;
+    }
+
+    public boolean coincideEventos(String str, ArrayList<String> substrings) {
+        for (String substr : substrings) {
+            for(NodoBayes n : predecesores){
+                if (substr.contains(n.getNombre()) && !str.contains(substr)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     protected void addPredecesor(NodoBayes pred){
         predecesores.add(pred);
     }
@@ -49,7 +139,11 @@ public class NodoBayes {
     }
 
     // Getters y Setters
-    protected String getNombre() {
+    protected ArrayList<String> getValores(){
+        return new ArrayList<>(probabilidades.keySet());
+    }
+
+    public String getNombre() {
         return nombre;
     }
 
