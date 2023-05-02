@@ -33,21 +33,25 @@ public class RedBayes {
     // Metodos Funcionales
     public Double Prob(String query){
         Double res = 0.0;
+        ArrayList<NodoBayes> visitados = new ArrayList<>();
         // NODO=VALOR | NODOX=X,NODOY=Y
         query = query.replace(" ", "");
 
-        // Nodo objetivo para calcular su probabilidad
-        String nombreObj = query.split("\\|")[0].split("=")[0];
-        String valObj = query.split("\\|")[0];
-        NodoBayes objetivo = nombreToNodo(nombreObj);
+        if(query.split("\\|").length > 1) {
+            // Nodo objetivo para calcular su probabilidad
+            String nombreObj = query.split("\\|")[0].split("=")[0];
+            String valObj = query.split("\\|")[0];
+            NodoBayes objetivo = nombreToNodo(nombreObj);
 
-        String evDado = "";
-        if(query.split("\\|").length > 1)
-            evDado = query.split("\\|")[1];
-        ArrayList<NodoBayes> visitados = new ArrayList<>();
-        res = objetivo.prob(valObj, evDado, visitados);
-
-
+            String evDado = "";
+            if (query.split("\\|").length > 1)
+                evDado = query.split("\\|")[1];
+            res = objetivo.prob(valObj, evDado, visitados);
+        }
+        else{
+            NodoBayes obj = nombreToNodo(query.split("=")[0]);
+            res = obj.prob(query, "", visitados);
+        }
         return res;
     }
 
