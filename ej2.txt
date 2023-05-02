@@ -1,0 +1,16 @@
+Lluvia
+-;T,F
+-;0.2,0.8
+.
+Rociador
+Lluvia;T,F
+LluviaF;0.4,0.6
+Lluvia=T;0.01,0.99
+.
+HierbaHumeda
+Rociador,Lluvia;T,F
+Rociador=F,Lluvia=F;0,1
+Rociador=F,Lluvia=T;0.8,0.2
+Rociador=T,Lluvia=F;0.9,0.1
+Rociador=T,Lluvia=T;0.99,0.01
+.
